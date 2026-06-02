@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StayBot AI - Your Smart Hotel Booking Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #1e3a8a;
+            --secondary-blue: #3b82f6;
+            --gold: #f59e0b;
+            --white: #ffffff;
+            --gray: #f3f4f6;
+            --dark-gray: #4b5563;
+            --black: #111827;
+        }
+
+        .dark-mode {
+            --primary-blue: #0f172a;
+            --secondary-blue: #60a5fa;
+            --gold: #fbbf24;
+            --white: #1f2937;
+            --gray: #111827;
+            --dark-gray: #d1d5db;
+            --black: #f9fafb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--white);
+            color: var(--black);
+            transition: all 0.3s ease;
+        }
+
+        /* Loading Animation */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(255,255,255,0.3);
+            border-top: 6px solid var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode nav {
+            background: rgba(31, 41, 55, 0.95);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--secondary-blue), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--black);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--secondary-blue);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dark-mode-btn {
+            background: var(--gray);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode-btn:hover {
+            background: var(--secondary-blue);
+            color: white;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--black);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.9), rgba(59, 130, 246, 0.9)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%231e3a8a" width="1200" height="600"/></svg>');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 8rem 2rem 4rem;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .typing-text {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            min-height: 2rem;
+            opacity: 0.9;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), #fbbf24);
+            color: var(--black);
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(245, 158, 11, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-blue);
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: transparent;
+            color: white;
+        }
+
+        /* Sections */
+        section {
+            padding: 5rem 5%;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Services */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .service-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .service-card.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .service-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .service-card h3 {
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Room Gallery */
+        .rooms-section {
+            background: var(--gray);
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .room-card {
+            background: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .room-card.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .room-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .room-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            color: white;
+        }
+
+        .room-content {
+            padding: 1.5rem;
+        }
+
+        .room-content h3 {
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .room-price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--gold);
+            margin: 1rem 0;
+        }
+
+        /* Chatbot */
+        .chatbot-section {
+            background: var(--gray);
+        }
+
+        .chatbot-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 1rem;
+            border-radius: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--secondary-blue);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: var(--gray);
+            color: var(--black);
+            border-bottom-left-radius: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-input-container {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid var(--gray);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid var(--gray);
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+            background: var(--white);
+            color: var(--black);
+        }
+
+        .chat-input:focus {
+            border-color: var(--secondary-blue);
+        }
+
+        .send-btn {
+            margin-left: 0.5rem;
+            padding: 1rem 1.5rem;
+            background: var(--secondary-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            background: var(--gold);
+            transform: scale(1.1);
+        }
+
+        /* Booking Form */
+        .booking-section {
+            background: var(--white);
+        }
+
+        .booking-form {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--gray);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--white);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: var(--white);
+            color: var(--black);
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--secondary-blue);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Testimonials */
+        .testimonials-section {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+        }
+
+        .testimonials-section .section-title {
+            background: white;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .testimonial-card {
+            background: rgba(255,255,255,0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            color: var(--black);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stars {
+            color: var(--gold);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .testimonial-text {
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        /* Contact */
+        .contact-section {
+            background: var(--gray);
+        }
+
+        .contact-info {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .contact-item {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .contact-item .icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .map-container {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            background: var(--white);
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary-blue);
+            color: white;
+            padding: 3rem 5%;
+            text-align: center;
+        }
+
+        .dark-mode footer {
+            background: #0f172a;
+        }
+
+        /* Floating Buttons */
+        .floating-whatsapp {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #25d366;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            text-decoration: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+
+        .floating-whatsapp:hover {
+            transform: scale(1.1);
+        }
+
+        .floating-chat {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 999;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .floating-chat:hover {
+            transform: scale(1.1);
+        }
+
+        /* Popup */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 10000;
+            display: none;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .popup.show {
+            display: block;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .popup h3 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .popup-close {
+            margin-top: 1rem;
+            padding: 0.5rem 2rem;
+            background: var(--secondary-blue);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: none;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--white);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .typing-text {
+                font-size: 1.1rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="loader" id="loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">🏨 StayBot AI</div>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#rooms">Rooms</a></li>
+            <li><a href="#chatbot">Chatbot</a></li>
+            <li><a href="#booking">Book Now</a></li>
+            <li><a href="#testimonials">Reviews</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <div class="nav-right">
+            <button class="dark-mode-btn" id="darkModeBtn">🌙</button>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <h1>StayBot AI</h1>
+        <div class="typing-text" id="typingText"></div>
+        <div class="hero-buttons">
+            <button class="btn btn-primary" onclick="scrollToSection('booking')">Book Room</button>
+            <button class="btn btn-secondary" onclick="scrollToSection('chatbot')">Chat Now</button>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services">
+        <h2 class="section-title">Our Services</h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">🛏️</div>
+                <h3>Room Booking</h3>
+                <p>Comfortable rooms with modern amenities</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🍽️</div>
+                <h3>Restaurant</h3>
+                <p>Delicious food from around the world</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">💆</div>
+                <h3>Spa</h3>
+                <p>Relax and rejuvenate your senses</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🏊</div>
+                <h3>Swimming Pool</h3>
+                <p>Take a dip in our pool</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">💪</div>
+                <h3>Gym</h3>
+                <p>Stay fit during your stay</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">✈️</div>
+                <h3>Airport Pickup</h3>
+                <p>Hassle-free arrival and departure</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rooms Section -->
+    <section class="rooms-section" id="rooms">
+        <h2 class="section-title">Our Rooms</h2>
+        <div class="rooms-grid">
+            <div class="room-card">
+                <div class="room-image">🛏️</div>
+                <div class="room-content">
+                    <h3>Standard Room</h3>
+                    <p>Cozy room with all basic amenities</p>
+                    <div class="room-price">₹1,500/night</div>
+                    <button class="btn btn-primary" onclick="scrollToSection('booking')">Book Now</button>
+                </div>
+            </div>
+            <div class="room-card">
+                <div class="room-image">🛏️✨</div>
+                <div class="room-content">
+                    <h3>Deluxe Room</h3>
+                    <p>Spacious room with premium amenities</p>
+                    <div class="room-price">₹2,500/night</div>
+                    <button class="btn btn-primary" onclick="scrollToSection('booking')">Book Now</button>
+                </div>
+            </div>
+            <div class="room-card">
+                <div class="room-image">🛏️⭐</div>
+                <div class="room-content">
+                    <h3>Premium Room</h3>
+                    <p>Luxury room with stunning views</p>
+                    <div class="room-price">₹4,000/night</div>
+                    <button class="btn btn-primary" onclick="scrollToSection('booking')">Book Now</button>
+                </div>
+            </div>
+            <div class="room-card">
+                <div class="room-image">🏠</div>
+                <div class="room-content">
+                    <h3>Suite</h3>
+                    <p>Ultimate luxury experience</p>
+                    <div class="room-price">₹7,000/night</div>
+                    <button class="btn btn-primary" onclick="scrollToSection('booking')">Book Now</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chatbot Section -->
+    <section class="chatbot-section" id="chatbot">
+        <h2 class="section-title">AI Booking Assistant</h2>
+        <div class="chatbot-container">
+            <div class="chatbot-header">
+                <h3>StayBot AI Chat</h3>
+                <p>Ask me anything about our hotel!</p>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">Hello! I'm StayBot, your smart hotel booking assistant. How can I help you today?</div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section class="booking-section" id="booking">
+        <h2 class="section-title">Book Your Stay</h2>
+        <form class="booking-form" id="bookingForm" onsubmit="bookRoom(event)">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="name" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="phone" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Check-in Date</label>
+                    <input type="date" id="checkin" required>
+                </div>
+                <div class="form-group">
+                    <label>Check-out Date</label>
+                    <input type="date" id="checkout" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Room Type</label>
+                    <select id="roomType" required>
+                        <option value="">Select room type</option>
+                        <option value="Standard">Standard - ₹1,500/night</option>
+                        <option value="Deluxe">Deluxe - ₹2,500/night</option>
+                        <option value="Premium">Premium - ₹4,000/night</option>
+                        <option value="Suite">Suite - ₹7,000/night</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Number of Guests</label>
+                    <select id="guests" required>
+                        <option value="">Select guests</option>
+                        <option value="1">1 Guest</option>
+                        <option value="2">2 Guests</option>
+                        <option value="3">3 Guests</option>
+                        <option value="4">4 Guests</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%">Book Now</button>
+        </form>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section" id="testimonials">
+        <h2 class="section-title">Guest Reviews</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">"Amazing stay! The room was clean and comfortable. Highly recommend!"</p>
+                <div class="testimonial-author">- Rajesh Kumar</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">"The AI chatbot made booking so easy! Great service."</p>
+                <div class="testimonial-author">- Priya Singh</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">"Perfect location and wonderful amenities. Will definitely come back!"</p>
+                <div class="testimonial-author">- Arun Mehta</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">"The staff was incredibly friendly and helpful."</p>
+                <div class="testimonial-author">- Neha Patel</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <div class="testimonial-card">
+                    <div class="stars">⭐⭐⭐⭐⭐</div>
+                    <p class="testimonial-text">"Best hotel experience ever! The pool and gym were fantastic!"</p>
+                    <div class="testimonial-author">- Vikram Sharma</div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">"The restaurant food was amazing. Loved every minute of our stay!"</p>
+                <div class="testimonial-author">- Ananya Desai</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+        <h2 class="section-title">Contact Us</h2>
+        <div class="contact-info">
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <div class="icon">📞</div>
+                    <strong>Phone</strong>
+                    <p>+91 98765 43210</p>
+                </div>
+                <div class="contact-item">
+                    <div class="icon">📧</div>
+                    <strong>Email</strong>
+                    <p>hello@staybotai.com</p>
+                </div>
+                <div class="contact-item">
+                    <div class="icon">📍</div>
+                    <strong>Address</strong>
+                    <p>123 Hotel Street, MG Road, Bangalore - 560001</p>
+                </div>
+            </div>
+            <div class="map-container">🗺️ Google Maps Location</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 StayBot AI - Your Smart Hotel Booking Assistant. All rights reserved.</p>
+        <p>Made with 🏨 in Bangalore</p>
+    </footer>
+
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/919876543210" class="floating-whatsapp" target="_blank">💬</a>
+
+    <!-- Floating Chat Button -->
+    <button class="floating-chat" onclick="scrollToSection('chatbot')">💬</button>
+
+    <!-- Popup -->
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="popup">
+        <h3>🎉 Booking Confirmed!</h3>
+        <p>Your room has been booked successfully!</p>
+        <button class="popup-close" onclick="closePopup()">Close</button>
+    </div>
+
+    <script>
+        // Loading animation
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1000);
+        });
+
+        // Typing effect
+        const texts = [
+            "Your Smart Hotel Booking Assistant",
+            "Book rooms instantly with our AI assistant!",
+            "Discover luxury stays at amazing prices!",
+            "Your perfect hotel experience starts here!"
+        ];
+        let textIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typingElement = document.getElementById('typingText');
+
+        function typeText() {
+            const currentText = texts[textIndex];
+            
+            if (isDeleting) {
+                typingElement.textContent = currentText.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typingElement.textContent = currentText.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            let typeSpeed = isDeleting ? 50 : 100;
+
+            if (!isDeleting && charIndex === currentText.length) {
+                typeSpeed = 2000;
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                textIndex = (textIndex + 1) % texts.length;
+                typeSpeed = 500;
+            }
+
+            setTimeout(typeText, typeSpeed);
+        }
+        typeText();
+
+        // Dark mode
+        const darkModeBtn = document.getElementById('darkModeBtn');
+        let isDarkMode = false;
+
+        darkModeBtn.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+            darkModeBtn.textContent = isDarkMode ? '☀️' : '🌙';
+        });
+
+        // Mobile menu
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinks = document.getElementById('navLinks');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Scroll to section
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+            navLinks.classList.remove('active');
+        }
+
+        // Chatbot responses
+        const responses = {
+            "room": "We have Standard, Deluxe, Premium, and Suite rooms available.",
+            "bangalore": "We have Standard, Deluxe, Premium, and Suite rooms available in Bangalore.",
+            "price": "Standard ₹1500, Deluxe ₹2500, Premium ₹4000, Suite ₹7000 per night.",
+            "deluxe": "Deluxe Room costs ₹2500 per night with premium amenities.",
+            "premium": "Premium Room costs ₹4000 per night with luxury amenities.",
+            "suite": "Suite Room costs ₹7000 per night and includes luxury amenities.",
+            "standard": "Standard Room costs ₹1500 per night.",
+            "wifi": "Yes, free high-speed WiFi is available in all rooms and public areas.",
+            "parking": "Free parking is available for all guests.",
+            "pool": "Our hotel has a swimming pool open from 7 AM to 9 PM.",
+            "gym": "The gym is available 24/7 with modern equipment.",
+            "restaurant": "Our restaurant serves Indian, Chinese and Continental food from 7 AM to 11 PM.",
+            "check in": "Check-in starts at 12 PM.",
+            "check out": "Check-out time is 11 AM.",
+            "room service": "Room service is available 24 hours.",
+            "location": "Our hotel is located on MG Road, in the heart of Bangalore city center.",
+            "booking": "Please fill the booking form below to book your stay!",
+            "attractions": "Nearby attractions include Cubbon Park, Lalbagh Botanical Garden, Bangalore Palace, and many shopping centers.",
+            "facilities": "We offer Free WiFi, Swimming Pool, Restaurant, Gym, Parking, Room Service, Spa, and Airport Pickup.",
+            "facility": "We offer Free WiFi, Swimming Pool, Swimming Pool, Restaurant, Gym, Parking, Room Service, Spa, and Airport Pickup.",
+            "spa": "Our spa offers relaxing massages and beauty treatments. Open from 9 AM to 9 PM.",
+            "airport": "We provide airport pickup and drop services. Please inform us in advance.",
+            "hi": "Hello! Welcome to StayBot AI. How can I assist you with your hotel booking today?",
+            "hello": "Hi there! I'm here to help with all your hotel queries and bookings.",
+            "hey": "Hey! Ready to book your perfect stay? Ask me anything!",
+            "thank you": "You're welcome! Is there anything else I can help you with?",
+            "thanks": "My pleasure! Let me know if you need anything else.",
+            "bye": "Goodbye! Have a wonderful stay! 🏨",
+            "goodbye": "See you soon! Enjoy your trip!",
+            "help": "I can help you with room information, pricing, facilities, nearby attractions, and booking rooms!",
+            "book": "Great! You can book a room using the booking form below or tell me your preferred dates!"
+        };
+
+        function getBotResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            for (const [key, response] of Object.entries(responses)) {
+                if (lowerMessage.includes(key)) {
+                    return response;
+                }
+            }
+            
+            const defaultResponses = [
+                "That's a great question! Would you like to book a room or know more about our hotel?",
+                "I'd love to help! Tell me what you're looking for during your stay.",
+                "Great! Feel free to ask about our rooms, facilities, or nearby attractions!",
+                "I understand! Have you tried our Deluxe or Premium rooms for a luxurious stay?",
+                "Excellent! Let me help you find the perfect room for your stay!"
+            ];
+            
+            return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            
+            setTimeout(() => {
+                const response = getBotResponse(message);
+                addMessage(response, 'bot');
+            }, 500);
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Booking form
+        function bookRoom(event) {
+            event.preventDefault();
+            
+            const booking = {
+                id: Date.now(),
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                checkin: document.getElementById('checkin').value,
+                checkout: document.getElementById('checkout').value,
+                roomType: document.getElementById('roomType').value,
+                guests: document.getElementById('guests').value
+            };
+            
+            let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            bookings.push(booking);
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+            
+            document.getElementById('popup').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+            
+            document.getElementById('bookingForm').reset();
+        }
+
+        function closePopup() {
+            document.getElementById('popup').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+        }
+
+        // Scroll animations
+        function animateOnScroll() {
+            const elements = document.querySelectorAll('.service-card, .room-card, .testimonial-card');
+            
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (elementTop < windowHeight - 100) {
+                    element.classList.add('animate');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', animateOnScroll);
+        window.addEventListener('load', animateOnScroll);
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                scrollToSection(targetId);
+            });
+        });
+
+        // Set minimum date for booking
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('checkin').setAttribute('min', today);
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('checkout').setAttribute('min', tomorrow.toISOString().split('T')[0]);
+
+        // Update checkout min date when check-in changes
+        document.getElementById('checkin').addEventListener('change', function() {
+            const checkinDate = new Date(this.value);
+            checkinDate.setDate(checkinDate.getDate() + 1);
+            document.getElementById('checkout').setAttribute('min', checkinDate.toISOString().split('T')[0]);
+        });
+    </script>
+</body>
+</html>
